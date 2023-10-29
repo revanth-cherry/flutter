@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'dart:typed_data';
+import 'dart:html' as html;
 
 import 'package:path_provider/path_provider.dart'; 
 import 'dart:io';
@@ -384,6 +387,72 @@ class _MyHomePageState extends State<MyHomePage> {
   // Open the file for download
   await OpenFile.open(filePath);
 }
+void downloadPdf() async {
+  Map<String, String?> selectedItemsDict = {
+    'Rice Item': selectedRiceItem,
+    'Roti Item': selectedRotiItem,
+    'North Indian Recipe': selectedRecipeItem,
+    'Breakfast Item': selectedBreakfastItem,
+    'South Indian Recipe': selectedSouthIndianRecipeItem,
+    'South Indian Fry Curry': selectedSouthIndianFryItem,
+    'South Indian Liquid Item': selectedSouthIndianLiquidItem,
+    'Chaat Item': selectedChaatItem,
+    'Fruit Item': selectedFruitItem,
+    'Italian Item': selectedItalianItem,
+    'ChineseCounter': selectedChineseCounter,
+    'PaanCounter': selectedPaanCounter,
+    'SouthIndianDesserts': selectedSouthIndianDesserts,
+    'SpecialSweets': selectedSpecialSweets,
+    'IceCream': selectedIceCream,
+    'WelcomeDrinks': selectedWelcomeDrinks,
+    'Starters': selectedStarters,
+    'Soups': selectedSoups,
+    'Pachadi': selectedPachadi,
+    'Powders': selectedPowders,
+    'Papads': selectedPapads,
+  };
+
+  // Filter out items with null values (items that were not selected)
+  selectedItemsDict.removeWhere((key, value) => value == null);
+
+ 
+
+  final pdf = pw.Document();
+
+  pdf.addPage(
+  pw.Page(
+    pageFormat: PdfPageFormat.a4,
+    build: (pw.Context context) {
+      return pw.Column(
+        children: [
+          pw.Header(level: 1, text: 'Selected Menu Items'),
+          for (var entry in selectedItemsDict.entries)
+            pw.Bullet(text: '${entry.key}: ${entry.value ?? "Not selected"}'),
+        ],
+      );
+    },
+  ),
+);
+
+
+  final pdfBytes = await pdf.save();
+
+  // Convert pdfBytes to Uint8List
+  final uint8List = Uint8List.fromList(pdfBytes);
+
+  final blob = html.Blob([uint8List]);
+  final url = html.Url.createObjectUrlFromBlob(blob);
+
+  final anchor = html.AnchorElement(href: url)
+    ..target = 'webdownload'
+    ..download = 'selected_items.pdf';
+
+  anchor.click();
+
+  // Clean up
+  html.Url.revokeObjectUrl(url);
+}
+
 
 
 
@@ -391,9 +460,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[
+  child: Column(
+    children: [
         SizedBox(height: 20.0),
         DropdownButtonFormField<String>(
           decoration: InputDecoration(
@@ -774,7 +842,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         SizedBox(height: 20.0),
         ElevatedButton(
-            onPressed: downloadAllItems,
+            onPressed: downloadPdf,
             child: Text('Download All Selected Items'),
         ),
       ],
