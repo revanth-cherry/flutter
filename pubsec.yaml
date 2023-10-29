@@ -39,6 +39,8 @@ dependencies:
   flip_card: ^0.7.0
   file_picker: ^4.1.4
   open_file: ^3.2.1
+  pdf: ^3.0.0
+
   
   # Replace with the latest version
   # The following adds the Cupertino Icons font to your application.
